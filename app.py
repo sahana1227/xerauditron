@@ -3,6 +3,8 @@ import os
 import traceback
 import logging
 from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
 
 # Add the modules directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'modules'))
@@ -36,7 +38,7 @@ class BasicAnalyzer:
     """Fallback analyzer using only basic libraries"""
     
     def __init__(self):
-        self.session = request.Session()
+        self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
@@ -413,9 +415,9 @@ def analyze_website():
         
         # Initialize analyzers
         link_extractor = CombinedLinkExtractor()
-        element_analyzer = ElementAnalyzer()
-        cms_detector = CMSDetector()
-        analytics_detector = AnalyticsDetector()
+        element_analyzer = ElementAnalyzerPlaywright()
+        cms_detector = CMSDetection()
+        analytics_detector = AnalyticsDetection()
         
         # Extract links
         logger.info("📋 Extracting links...")
@@ -473,7 +475,7 @@ def analyze_all_links():
         logger.info(f"🔍 Starting deep analysis for: {url}")
         
         # Initialize analyzer
-        element_analyzer = ElementAnalyzer()
+        element_analyzer = ElementAnalyzerPlaywright()
         
         # Perform deep analysis
         result = element_analyzer.analyze_multiple_pages(url, max_links=max_links)
