@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Audit Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .links-section {
+            margin-top: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .links-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+        }
+
+        .link-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+
+        .link-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .link-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-url {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .link-url:hover {
+            text-decoration: underline;
+        }
+
+        .link-text {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .export-section {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Website Audit Tool</h1>
+            <p>Comprehensive website analysis with link extraction, CMS detection, and element analysis</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="input-group">
+                    <input type="url" id="urlInput" class="url-input" placeholder="Enter website URL (e.g., https://example.com)" required>
+                    <button onclick="startAnalysis()" class="btn btn-primary" id="analyzeBtn">
+                        🚀 Analyze Website
+                    </button>
+                    <button onclick="quickLinks()" class="btn btn-secondary" id="quickBtn">
+                        ⚡ Quick Links
+                    </button>
+                    <button onclick="analyzeAllLinks()" class="btn" style="background: #28a745; color: white;" id="analyzeAllBtn">
+                        🔍 Analyze All Links
+                    </button>
+                </div>
+                <p style="color: #6c757d; font-size: 0.9rem;">
+                    <strong>Quick Links:</strong> Fast link extraction only | 
+                    <strong>Full Analysis:</strong> Complete audit with CMS detection, analytics, and element analysis
+                </p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <h3>Analyzing website...</h3>
+                <p>This may take a few moments depending on the website size.</p>
+            </div>
+
+            <div class="results" id="results">
+                <div class="results-grid" id="statsGrid">
+                    <!-- Stats will be populated here -->
+                </div>
+
+                <div class="links-section">
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTab('internal')">Internal Links</button>
+                        <button class="tab" onclick="showTab('external')">External Links</button>
+                        <button class="tab" onclick="showTab('sitemap')">Sitemap URLs</button>
+                        <button class="tab" onclick="showTab('per-url')">Per-URL Analysis</button>
+                        <button class="tab" onclick="showTab('details')">Technical Details</button>
+                    </div>
+
+                    <div id="internal" class="tab-content active">
+                        <div class="links-list" id="internalLinks">
+                            <!-- Internal links will be populated here -->
+                        </div>
+                    </div>
+
+                    <div id="external" class="tab-content">
+                        <div class="links-list" id="externalLinks">
+                            <!-- External links will be populated here -->
+                        </div>
+                    </div>
+
+                    <div id="sitemap" class="tab-content">
+                        <div class="links-list" id="sitemapLinks">
+                            <!-- Sitemap links will be populated here -->
+                        </div>
+                    </div>
+
+                    <div id="per-url" class="tab-content">
+                        <div id="perUrlAnalysis">
+                            <!-- Per-URL analysis will be populated here -->
+                        </div>
+                    </div>
+
+                    <div id="details" class="tab-content">
+                        <div id="technicalDetails">
+                            <!-- Technical details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <h3>📊 Export Results</h3>
+                    <p>Download your analysis results in different formats for further processing.</p>
+                    <div style="margin-top: 20px;">
+                        <button onclick="exportJSON()" class="btn btn-secondary" style="margin: 5px;">
+                            📄 Export JSON
+                        </button>
+                        <button onclick="exportCSV()" class="btn btn-secondary" style="margin: 5px;">
+                            📊 Export CSV
+                        </button>
+                        <button onclick="exportReport()" class="btn btn-secondary" style="margin: 5px;">
+                            📋 Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResults = null;
+
+        function startAnalysis() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            showLoading();
+            
+            fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    currentResults = data;
+                    displayResults(data);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Analysis failed: ' + error.message);
+            });
+        }
+
+        function quickLinks() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            showLoading();
+            
+            fetch('/api/quick-links', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    currentResults = {
+                        url: url,
+                        internal_links: data.internal_links,
+                        external_links: data.external_links,
+                        total_links: data.total,
+                        quick_mode: true
+                    };
+                    displayResults(currentResults);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Quick analysis failed: ' + error.message);
+            });
+        }
+
+        function analyzeAllLinks() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('loading').innerHTML = `
+                <div class="spinner"></div>
+                <h3>Analyzing all internal links...</h3>
+                <p>This will analyze elements on each page found. This may take several minutes.</p>
+            `;
+            
+            fetch('/api/analyze-all-links', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    currentResults = data;
+                    displayPerUrlResults(data);
+                    document.getElementById('results').style.display = 'block';
+                    showTab('per-url');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Per-URL analysis failed: ' + error.message);
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('quickBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('quickBtn').disabled = false;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+            
+            const mainContent = document.querySelector('.main-content');
+            const existingError = mainContent.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            mainContent.insertBefore(errorDiv, document.getElementById('loading'));
+        }
+
+        function displayResults(data) {
+            document.getElementById('results').style.display = 'block';
+            
+            // Clear any existing errors
+            const existingError = document.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Display stats
+            displayStats(data);
+            
+            // Display links
+            displayLinks(data.internal_links || [], 'internalLinks');
+            displayLinks(data.external_links || [], 'externalLinks');
+            displayLinks(data.sitemap_links || [], 'sitemapLinks');
+            
+            // Display technical details
+            displayTechnicalDetails(data);
+        }
+
+        function displayStats(data) {
+    const statsGrid = document.getElementById('statsGrid');
+    statsGrid.innerHTML = '';
+
+    // Links Overview
+    const linksCard = createStatsCard('🔗', 'Links Overview', [
+        { label: 'Total Links', value: data.total_links || 0 },
+        { label: 'Internal Links', value: (data.internal_links || []).length },
+        { label: 'External Links', value: (data.external_links || []).length },
+        { label: 'Sitemap URLs', value: (data.sitemap_links || []).length }
+    ]);
+    statsGrid.appendChild(linksCard);
+
+    if (!data.quick_mode) {
+        // CMS Detection with detected systems
+        let cmsStats = [
+            { label: 'Primary CMS', value: data.cms_detected?.primary_cms || 'Not detected' },
+            { label: 'Systems Found', value: data.cms_detected?.total_detected || 0 }
+        ];
+        
+        // Add detected CMS systems
+        if (data.cms_detected?.detected_systems) {
+            const detectedSystems = Object.entries(data.cms_detected.detected_systems)
+                .filter(([cms, details]) => details.detected)
+                .map(([cms, details]) => `${cms} (${details.confidence}%)`)
+                .join(', ');
+            
+            if (detectedSystems) {
+                cmsStats.push({ label: 'Detected', value: detectedSystems });
+            }
+        }
+        
+        const cmsCard = createStatsCard('🔧', 'CMS Detection', cmsStats);
+        statsGrid.appendChild(cmsCard);
+
+        // Analytics Tools with detected tools
+        let analyticsStats = [
+            { label: 'Tools Detected', value: data.analytics_tools?.total_detected || 0 },
+            { label: 'Categories', value: Object.keys(data.analytics_tools?.categories || {}).length }
+        ];
+        
+        // Add detected analytics tools
+        if (data.analytics_tools?.detected_tools) {
+            const detectedTools = Object.entries(data.analytics_tools.detected_tools)
+                .filter(([tool, details]) => details.detected)
+                .map(([tool, details]) => `${tool} (${details.confidence}%)`)
+                .join(', ');
+            
+            if (detectedTools) {
+                analyticsStats.push({ label: 'Tools Found', value: detectedTools });
+            }
+        }
+        
+        const analyticsCard = createStatsCard('📊', 'Analytics & Tools', analyticsStats);
+        statsGrid.appendChild(analyticsCard);
+
+        // Enhanced Elements Analysis
+        if (data.elements && !data.elements.error) {
+            const elementsCard = createStatsCard('🔍', 'Page Elements', [
+                { label: 'Total Headings', value: data.elements.headings?.total_headings || 0 },
+                { label: 'Images', value: data.elements.images?.total_images || 0 },
+                { label: 'Forms', value: data.elements.forms?.total_forms || 0 },
+                { label: 'Interactive Elements', value: data.elements.interactive_elements?.total_interactive || 0 },
+                { label: 'Media Elements', value: data.elements.media_elements?.total_media || 0 }
+            ]);
+            statsGrid.appendChild(elementsCard);
+
+            // SEO & Accessibility Card
+            const seoCard = createStatsCard('🎯', 'SEO & Accessibility', [
+                { label: 'Accessibility Score', value: `${data.elements.accessibility?.score || 0}%` },
+                { label: 'Meta Description', value: data.elements.meta_tags?.has_description ? 'Yes' : 'No' },
+                { label: 'Alt Text Coverage', value: `${(data.elements.images?.alt_text_percentage || 0).toFixed(1)}%` },
+                { label: 'H1 Tags', value: data.elements.headings?.has_h1 ? (data.elements.headings?.multiple_h1 ? 'Multiple' : 'Single') : 'None' }
+            ]);
+            statsGrid.appendChild(seoCard);
+
+            // Social Media Card (if social links found)
+            if (data.elements.links?.social_platforms?.length > 0) {
+                const socialCard = createStatsCard('📱', 'Social Media', [
+                    { label: 'Platforms Found', value: data.elements.links.social_platforms.length },
+                    { label: 'Platforms', value: data.elements.links.social_platforms.join(', ') }
+                ]);
+                statsGrid.appendChild(socialCard);
+            }
+        }
+    }
+}
+
+        function createStatsCard(icon, title, stats) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            
+            let statsHTML = '';
+            stats.forEach(stat => {
+                statsHTML += `
+                    <div class="stat">
+                        <span class="stat-label">${stat.label}</span>
+                        <span class="stat-value">${stat.value}</span>
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <h3><span class="icon">${icon}</span>${title}</h3>
+                ${statsHTML}
+            `;
+
+            return card;
+        }
+
+        function displayLinks(links, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (!links || links.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">No links found</div>';
+                return;
+            }
+
+            links.forEach(link => {
+                const linkItem = document.createElement('div');
+                linkItem.className = 'link-item';
+                
+                linkItem.innerHTML = `
+                    <a href="${link.url}" target="_blank" class="link-url">${link.url}</a>
+                    ${link.text ? `<div class="link-text">${link.text}</div>` : ''}
+                    ${link.title ? `<div class="link-text"><strong>Title:</strong> ${link.title}</div>` : ''}
+                `;
+                
+                container.appendChild(linkItem);
+            });
+        }
+
+        function displayTechnicalDetails(data) {
+    const container = document.getElementById('technicalDetails');
+    let html = '';
+
+    if (data.quick_mode) {
+        html = '<div class="result-card"><h3>Quick Mode</h3><p>Run full analysis for detailed technical information.</p></div>';
+    } else {
+        // CMS Detection Details
+        if (data.cms_detected && data.cms_detected.detected_systems) {
+            html += '<div class="result-card"><h3>🔧 CMS Detection Results</h3>';
+            
+            const detectedSystems = Object.entries(data.cms_detected.detected_systems);
+            if (detectedSystems.length > 0) {
+                detectedSystems.forEach(([cms, details]) => {
+                    const badge = details.detected ? 'badge-success' : 'badge-warning';
+                    const status = details.detected ? 'DETECTED' : 'POSSIBLE';
+                    
+                    html += `
+                        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <strong style="font-size: 1.1em;">${cms}</strong> 
+                                <span class="badge ${badge}">${status}</span>
+                                <span class="badge badge-info">${details.confidence}% confidence</span>
+                            </div>
+                            <div style="margin-left: 10px;">
+                                <strong>Evidence found:</strong>
+                                <ul style="margin: 5px 0 0 20px;">
+                                    ${details.evidence.map(e => `<li>${e}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No CMS detected on this website.</p>';
+            }
+            html += '</div>';
+        }
+
+        // Analytics Tools Details
+        if (data.analytics_tools && data.analytics_tools.detected_tools) {
+            html += '<div class="result-card"><h3>📊 Analytics & Marketing Tools</h3>';
+            
+            const detectedTools = Object.entries(data.analytics_tools.detected_tools);
+            const activeTools = detectedTools.filter(([tool, details]) => details.detected);
+            
+            if (activeTools.length > 0) {
+                // Group by category
+                const categories = {};
+                activeTools.forEach(([tool, details]) => {
+                    const category = details.category || 'Other';
+                    if (!categories[category]) categories[category] = [];
+                    categories[category].push([tool, details]);
+                });
+                
+                Object.entries(categories).forEach(([category, tools]) => {
+                    html += `<h4 style="color: #667eea; margin-top: 20px;">${category}</h4>`;
+                    tools.forEach(([tool, details]) => {
+                        html += `
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <strong>${tool}</strong>
+                                    <span class="badge badge-success">ACTIVE</span>
+                                    <span class="badge badge-info">${details.confidence}% confidence</span>
+                                </div>
+                                <div style="font-size: 0.9em; color: #6c757d;">
+                                    <strong>Detection evidence:</strong>
+                                    <ul style="margin: 5px 0 0 15px;">
+                                        ${details.evidence.map(e => `<li>${e}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+            } else {
+                html += '<p>No analytics or marketing tools detected.</p>';
+            }
+            html += '</div>';
+        }
+
+        // Enhanced Elements Details
+        if (data.elements && !data.elements.error) {
+            html += '<div class="result-card"><h3>🔍 Detailed Elements Analysis</h3>';
+            
+            // Heading Structure
+            if (data.elements.headings) {
+                html += '<h4>📝 Heading Structure:</h4>';
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+                
+                Object.entries(data.elements.headings.structure).forEach(([tag, count]) => {
+                    if (count > 0) {
+                        const samples = data.elements.headings.content_sample[tag] || [];
+                        html += `
+                            <div style="padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                <strong>${tag.toUpperCase()}: ${count}</strong>
+                                ${samples.length > 0 ? `<div style="font-size: 0.8em; color: #6c757d; margin-top: 5px;">${samples.map(s => `"${s}"`).join('<br>')}</div>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+            }
+
+            // Images Analysis
+            if (data.elements.images) {
+                html += `<h4>🖼️ Images Analysis:</h4>`;
+                html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">`;
+                html += `<div><strong>Total Images:</strong> ${data.elements.images.total_images}</div>`;
+                html += `<div><strong>With Alt Text:</strong> ${data.elements.images.with_alt_text}</div>`;
+                html += `<div><strong>Missing Alt:</strong> ${data.elements.images.missing_alt_text}</div>`;
+                html += `<div><strong>Coverage:</strong> ${data.elements.images.alt_text_percentage.toFixed(1)}%</div>`;
+                html += `</div>`;
+            }
+
+            // Forms Analysis
+            if (data.elements.forms && data.elements.forms.total_forms > 0) {
+                html += `<h4>📋 Forms Analysis:</h4>`;
+                html += `<p><strong>Total Forms:</strong> ${data.elements.forms.total_forms}</p>`;
+                html += `<p><strong>Total Inputs:</strong> ${data.elements.forms.total_inputs}</p>`;
+                html += `<p><strong>Total Buttons:</strong> ${data.elements.forms.total_buttons}</p>`;
+            }
+
+            // Links Breakdown
+            if (data.elements.links) {
+                html += `<h4>🔗 Links Breakdown:</h4>`;
+                html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">`;
+                html += `<div><strong>Internal:</strong> ${data.elements.links.internal_links}</div>`;
+                html += `<div><strong>External:</strong> ${data.elements.links.external_links}</div>`;
+                html += `<div><strong>Email:</strong> ${data.elements.links.email_links}</div>`;
+                html += `<div><strong>Phone:</strong> ${data.elements.links.phone_links}</div>`;
+                html += `</div>`;
+                
+                if (data.elements.links.social_platforms && data.elements.links.social_platforms.length > 0) {
+                    html += `<p><strong>Social Platforms:</strong> ${data.elements.links.social_platforms.join(', ')}</p>`;
+                }
+            }
+
+            // Accessibility Score
+            if (data.elements.accessibility) {
+                const score = data.elements.accessibility.score;
+                const scoreColor = score >= 80 ? '#28a745' : score >= 60 ? '#ffc107' : '#dc3545';
+                html += `<h4>♿ Accessibility Analysis:</h4>`;
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">`;
+                html += `<div style="font-size: 1.2em; margin-bottom: 10px;"><strong>Accessibility Score: <span style="color: ${scoreColor};">${score}%</span></strong></div>`;
+                html += `<p><strong>Issues Found:</strong> ${data.elements.accessibility.issues_found}</p>`;
+                html += `<p><strong>Images without Alt Text:</strong> ${data.elements.accessibility.images_without_alt}</p>`;
+                html += `<p><strong>Links without Text:</strong> ${data.elements.accessibility.links_without_text}</p>`;
+                html += `</div>`;
+            }
+
+            html += '</div>';
+        }
+    }
+
+    container.innerHTML = html;
+}
+
+        function displayPerUrlResults(data) {
+            const container = document.getElementById('perUrlAnalysis');
+            
+            let html = `
+                <div class="result-card">
+                    <h3>📊 Analysis Summary</h3>
+                    <div class="stat">
+                        <span class="stat-label">Total Internal Links Found</span>
+                        <span class="stat-value">${data.total_internal_links}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Successfully Analyzed</span>
+                        <span class="stat-value">${data.analyzed_links}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Failed to Analyze</span>
+                        <span class="stat-value">${data.failed_links}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Average SEO Score</span>
+                        <span class="stat-value">${data.summary.average_seo_score.toFixed(1)}%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Average Accessibility Score</span>
+                        <span class="stat-value">${data.summary.average_accessibility_score.toFixed(1)}%</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🔢 Total Elements Found</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div><strong>Buttons:</strong> ${data.summary.total_buttons}</div>
+                        <div><strong>Forms:</strong> ${data.summary.total_forms}</div>
+                        <div><strong>Images:</strong> ${data.summary.total_images}</div>
+                        <div><strong>Headings:</strong> ${data.summary.total_headings}</div>
+                        <div><strong>Videos:</strong> ${data.summary.total_videos}</div>
+                        <div><strong>Calculators:</strong> ${data.summary.total_calculators}</div>
+                        <div><strong>Banners:</strong> ${data.summary.total_banners}</div>
+                        <div><strong>Carousels:</strong> ${data.summary.total_carousels}</div>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>📋 Per-URL Element Analysis</h3>
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <th style="padding: 10px; text-align: left;">URL</th>
+                                    <th style="padding: 10px; text-align: center;">Status</th>
+                                    <th style="padding: 10px; text-align: center;">Buttons</th>
+                                    <th style="padding: 10px; text-align: center;">Forms</th>
+                                    <th style="padding: 10px; text-align: center;">Images</th>
+                                    <th style="padding: 10px; text-align: center;">Headings</th>
+                                    <th style="padding: 10px; text-align: center;">SEO Score</th>
+                                    <th style="padding: 10px; text-align: center;">Accessibility</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            // Add successful analyses
+            data.analyzed_data.forEach(link => {
+                const seoColor = link.seo_score >= 70 ? '#28a745' : link.seo_score >= 40 ? '#ffc107' : '#dc3545';
+                const accessibilityColor = link.accessibility_score >= 80 ? '#28a745' : link.accessibility_score >= 60 ? '#ffc107' : '#dc3545';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 8px;">
+                            <a href="${link.url}" target="_blank" style="color: #667eea; text-decoration: none; font-size: 0.9em;">
+                                ${link.url.length > 50 ? link.url.substring(0, 50) + '...' : link.url}
+                            </a>
+                            ${link.text ? `<div style="font-size: 0.8em; color: #6c757d;">${link.text}</div>` : ''}
+                        </td>
+                        <td style="padding: 8px; text-align: center;">${link.status}</td>
+                        <td style="padding: 8px; text-align: center;">${link.elements.buttons}</td>
+                        <td style="padding: 8px; text-align: center;">${link.elements.forms}</td>
+                        <td style="padding: 8px; text-align: center;">${link.elements.images}</td>
+                        <td style="padding: 8px; text-align: center;">${link.elements.headings}</td>
+                        <td style="padding: 8px; text-align: center; color: ${seoColor}; font-weight: bold;">${link.seo_score}%</td>
+                        <td style="padding: 8px; text-align: center; color: ${accessibilityColor}; font-weight: bold;">${link.accessibility_score}%</td>
+                    </tr>
+                `;
+            });
+
+            // Add failed analyses
+            data.failed_data.forEach(link => {
+                html += `
+                    <tr style="border-bottom: 1px solid #dee2e6; background: #fff5f5;">
+                        <td style="padding: 8px;">
+                            <span style="color: #dc3545; font-size: 0.9em;">
+                                ${link.url.length > 50 ? link.url.substring(0, 50) + '...' : link.url}
+                            </span>
+                            <div style="font-size: 0.8em; color: #dc3545;">${link.error}</div>
+                        </td>
+                        <td style="padding: 8px; text-align: center;">${link.status}</td>
+                        <td colspan="6" style="padding: 8px; text-align: center; color: #6c757d;">Analysis Failed</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function exportJSON() {
+            if (!currentResults) {
+                alert('No results to export');
+                return;
+            }
+
+            const dataStr = JSON.stringify(currentResults, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `website-audit-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function exportCSV() {
+            if (!currentResults) {
+                alert('No results to export');
+                return;
+            }
+
+            let csv = 'Type,URL,Text,Title\n';
+            
+            (currentResults.internal_links || []).forEach(link => {
+                csv += `Internal,"${link.url}","${link.text || ''}","${link.title || ''}"\n`;
+            });
+            
+            (currentResults.external_links || []).forEach(link => {
+                csv += `External,"${link.url}","${link.text || ''}","${link.title || ''}"\n`;
+            });
+
+            const dataBlob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `website-links-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function exportReport() {
+            if (!currentResults) {
+                alert('No results to export');
+                return;
+            }
+
+            let report = `Website Audit Report\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n`;
+            report += `URL: ${currentResults.url}\n`;
+            report += `${'='.repeat(50)}\n\n`;
+            
+            report += `SUMMARY\n`;
+            report += `Total Links: ${currentResults.total_links || 0}\n`;
+            report += `Internal Links: ${(currentResults.internal_links || []).length}\n`;
+            report += `External Links: ${(currentResults.external_links || []).length}\n\n`;
+
+            if (!currentResults.quick_mode) {
+                if (currentResults.cms_detected) {
+                    report += `CMS DETECTION\n`;
+                    report += `Primary CMS: ${currentResults.cms_detected.primary_cms || 'Not detected'}\n`;
+                    report += `Systems Found: ${currentResults.cms_detected.total_detected || 0}\n\n`;
+                }
+
+                if (currentResults.analytics_tools) {
+                    report += `ANALYTICS TOOLS\n`;
+                    report += `Tools Detected: ${currentResults.analytics_tools.total_detected || 0}\n\n`;
+                }
+            }
+
+            const dataBlob = new Blob([report], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `website-audit-report-${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startAnalysis();
+            }
+        });
+    </script>
+</body>
+</html>
