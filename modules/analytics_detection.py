@@ -85,6 +85,24 @@ class AnalyticsDetection:
                     'category': 'Analytics'
                 }
             
+            # Matomo/Piwik
+            matomo_patterns = [r'matomo\.js', r'piwik\.js', r'_paq\.push', r'matomo\.php', r'piwik\.php']
+            matomo_score = 0
+            matomo_evidence = []
+            
+            for pattern in matomo_patterns:
+                if re.search(pattern, html_content, re.I):
+                    matomo_score += 20
+                    matomo_evidence.append(f'Pattern found: {pattern}')
+            
+            if matomo_score > 0:
+                detected_tools['Matomo'] = {
+                    'detected': matomo_score >= 20,
+                    'confidence': min(matomo_score, 100),
+                    'evidence': matomo_evidence[:3],
+                    'category': 'Analytics'
+                }
+            
             # Categorize tools
             categories = {}
             for tool, data in detected_tools.items():
